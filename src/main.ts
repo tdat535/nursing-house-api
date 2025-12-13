@@ -19,15 +19,19 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
 
   // 🔥 Swagger config
+  app.setGlobalPrefix('api');
+
   const config = new DocumentBuilder()
-    .setTitle('Carehome API')
-    .setDescription('API docs cho hệ thống quản lý viện dưỡng lão')
+    .setTitle('Nursing House API')
+    .setDescription('API docs hệ thống viện dưỡng lão')
     .setVersion('1.0')
-    .addBearerAuth() // nếu có JWT
+    .addBearerAuth()
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, document);
+
+  // 🔥 docs nằm dưới /api/docs
+  SwaggerModule.setup('api/docs', app, document);
 
   await app.listen(3050);
 }
