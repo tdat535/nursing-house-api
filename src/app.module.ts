@@ -10,6 +10,7 @@ import { ServiceModule } from './Service/service.module';
 import { HealthCheckModule } from './HealthCheck/health-check.module';
 import { MedicationsModule } from './residents/medications.module';
 import { DrugsModule } from './drugs/drugs.module';
+import { RolesModule } from './role/roles.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { DrugsModule } from './drugs/drugs.module';
     HealthCheckModule,
     MedicationsModule,
     DrugsModule,
+    RolesModule
     
   ],
 
