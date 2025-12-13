@@ -3,15 +3,17 @@ import { ResidentsService } from './residents.service';
 import { CreateResidentWithMedicalDto } from './dto/CreateResidentWithMedicalDto';
 import { UpdateResidentDto } from './dto/update-resident.dto';
 import { OutResidentDto } from './dto/out-resident.dto';
+import { ApiTags, ApiOperation, ApiBody, ApiParam } from '@nestjs/swagger';
 
+@ApiTags('Residents')
 @Controller('residents')
 export class ResidentsController {
-  constructor(private readonly residentsService: ResidentsService) {}
+  constructor(private readonly residentsService: ResidentsService) { }
 
   // --- Lấy tất cả cư dân ---
+  @ApiOperation({ summary: 'Lấy danh sách tất cả cư dân' })
   @Get()
   findAll() {
-    console.log('Getting all residents');
     return this.residentsService.findAll();
   }
 
@@ -23,12 +25,16 @@ export class ResidentsController {
   }
 
   // --- Tạo cư dân mới + hồ sơ y tế ---
+  @ApiOperation({ summary: 'Tạo cư dân mới kèm hồ sơ y tế' })
+  @ApiBody({ type: CreateResidentWithMedicalDto })
   @Post('create')
   createWithMedical(@Body() createDto: CreateResidentWithMedicalDto) {
     return this.residentsService.createWithMedical(createDto);
   }
 
   // --- Thêm dịch vụ cho cư dân ---
+  @ApiOperation({ summary: 'Thêm dịch vụ cho cư dân' })
+  @ApiParam({ name: 'id', description: 'ID cư dân' })
   @Post(':id/services')
   addServices(
     @Param('id') residentId: string,
@@ -43,6 +49,8 @@ export class ResidentsController {
     return this.residentsService.findOne(+id);
   }
 
+  @ApiOperation({ summary: 'Cho cư dân ra viện' })
+  @ApiBody({ type: OutResidentDto })
   @Patch('discharge')
   async outResident(@Body() dto: OutResidentDto) {
     console.log('Processing resident discharge:', dto);
@@ -59,13 +67,11 @@ export class ResidentsController {
     return this.residentsService.update(+id, updateDto);
   }
 
-  
-
   // --- Xóa cư dân ---
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.residentsService.remove(+id);
   }
 
-  
+
 }
