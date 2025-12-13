@@ -8,31 +8,36 @@ const server = express();
 let app: any;
 
 async function bootstrap() {
-  if (!app) {
-    const nestApp = await NestFactory.create(
-      AppModule,
-      new ExpressAdapter(server),
-    );
+    if (!app) {
+        const nestApp = await NestFactory.create(
+            AppModule,
+            new ExpressAdapter(server),
+        );
 
-    const config = new DocumentBuilder()
-      .setTitle('Carehome API')
-      .setDescription('API quản lý viện dưỡng lão')
-      .setVersion('1.0')
-      .build();
+        const config = new DocumentBuilder()
+            .setTitle('Carehome API')
+            .setDescription('API quản lý viện dưỡng lão')
+            .setVersion('1.0')
+            .build();
 
-    const document = SwaggerModule.createDocument(nestApp, config);
+        const document = SwaggerModule.createDocument(nestApp, config);
 
-    // 🔥 FIX QUAN TRỌNG
-    SwaggerModule.setup('api/docs', nestApp, document);
+        SwaggerModule.setup('docs', nestApp, document, {
+            useGlobalPrefix: true,
+            customSiteTitle: 'Carehome API Docs',
+            swaggerOptions: {
+                persistAuthorization: true,
+            },
+        });
 
-    await nestApp.init();
-    app = server;
-  }
+        await nestApp.init();
+        app = server;
+    }
 
-  return app;
+    return app;
 }
 
 export default async (req, res) => {
-  const app = await bootstrap();
-  app(req, res);
+    const app = await bootstrap();
+    app(req, res);
 };
