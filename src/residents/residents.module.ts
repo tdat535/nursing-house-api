@@ -9,6 +9,8 @@ import { Medication } from './entities/medications/medication.entity';
 import { InitialAssessment } from './entities/initial-assessment/initial-assessment.entity';
 import { Intervention } from './entities/intervention/intervention.entity';
 import { PressureUlcer } from './entities/pressure-ulcer/pressure-ulcer.entity';
+import { Service } from '../Service/service.entity';
+import { Bed } from 'src/room/bed.entity';
 
 @Module({
   imports: [
@@ -20,6 +22,8 @@ import { PressureUlcer } from './entities/pressure-ulcer/pressure-ulcer.entity';
       InitialAssessment,
       Intervention,
       PressureUlcer,
+      Service,
+      Bed
     ]),
   ],
   controllers: [ResidentsController],

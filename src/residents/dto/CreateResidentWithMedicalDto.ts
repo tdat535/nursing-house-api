@@ -134,7 +134,7 @@ export class CreateResidentWithMedicalDto {
   @IsOptional()
   dob?: string;
 
-  @IsEnum(['male','female','other'])
+  @IsEnum(['male', 'female', 'other'])
   @IsOptional()
   gender?: string;
 
@@ -142,13 +142,13 @@ export class CreateResidentWithMedicalDto {
   @IsOptional()
   national_id?: string;
 
-  @IsString()
+  @IsNumber()
   @IsOptional()
-  room?: string;
+  bedId?: number;
 
-  @IsString()
+  @IsNumber()
   @IsOptional()
-  bed?: string;
+  roomId?: number;
 
   @IsArray()
   @ValidateNested({ each: true })

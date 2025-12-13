@@ -6,12 +6,9 @@ export class Medication {
   @PrimaryGeneratedColumn()
   medication_id: number;
 
-  @ManyToOne(() => Resident)
+  @ManyToOne(() => Resident, resident => resident.medications, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'resident_id' })
   resident: Resident;
-
-  @Column()
-  resident_id: number;
 
   @Column()
   medication_name: string;
@@ -27,4 +24,5 @@ export class Medication {
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;
+
 }
