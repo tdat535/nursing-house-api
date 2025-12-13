@@ -21,7 +21,9 @@ async function bootstrap() {
       .build();
 
     const document = SwaggerModule.createDocument(nestApp, config);
-    SwaggerModule.setup('docs', nestApp, document);
+
+    // 🔥 FIX QUAN TRỌNG
+    SwaggerModule.setup('api/docs', nestApp, document);
 
     await nestApp.init();
     app = server;
