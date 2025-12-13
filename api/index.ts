@@ -3,53 +3,101 @@ import { AppModule } from '../src/app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import express from 'express';
+import path from 'path';
+import swaggerUiDist from 'swagger-ui-dist';
 
 const server = express();
-let cachedApp: any;
+let app: any;
 
 async function bootstrap() {
-  if (!cachedApp) {
-    const nestApp = await NestFactory.create(
-      AppModule,
-      new ExpressAdapter(server),
-    );
+    if (!app) {
+        const nestApp = await NestFactory.create(
+            AppModule,
+            new ExpressAdapter(server),
+        );
 
-    nestApp.setGlobalPrefix('api');
+        // 🔥 prefix chuẩn Vercel
+        nestApp.setGlobalPrefix('api');
 
-    const config = new DocumentBuilder()
-      .setTitle('Carehome API')
-      .setDescription('API quản lý viện dưỡng lão')
-      .setVersion('1.0')
-      .build();
+        // ===== Swagger document =====
+        const config = new DocumentBuilder()
+            .setTitle('Carehome API')
+            .setDescription('API quản lý viện dưỡng lão')
+            .setVersion('1.0')
+            .build();
 
-    const document = SwaggerModule.createDocument(nestApp, config);
+        const document = SwaggerModule.createDocument(nestApp, config);
 
-    // 👉 EXPORT JSON RIÊNG
-    nestApp.getHttpAdapter().get('/api/docs-json', (req, res) => {
-      res.json(document);
-    });
+        // ===== SERVE SWAGGER STATIC FILES (QUAN TRỌNG) =====
+        const swaggerPath = swaggerUiDist.getAbsoluteFSPath();
 
-    // 👉 DÙNG CDN, KHÔNG DÙNG STATIC FILES
-    SwaggerModule.setup('docs', nestApp, document, {
-      customCssUrl:
-        'https://unpkg.com/swagger-ui-dist/swagger-ui.css',
-      customJs: [
-        'https://unpkg.com/swagger-ui-dist/swagger-ui-bundle.js',
-        'https://unpkg.com/swagger-ui-dist/swagger-ui-standalone-preset.js',
-      ],
-      swaggerOptions: {
+        server.use(
+            '/api/docs',
+            express.static(swaggerPath, { index: false }),
+        );
+
+        // ===== Swagger HTML =====
+        server.get('/api/docs', (_req, res) => {
+            res.send(`
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Carehome API Docs</title>
+
+  <!-- 🔥 Swagger CSS -->
+  <link rel="stylesheet" type="text/css" href="./swagger-ui.css" />
+
+  <style>
+    html { box-sizing: border-box; overflow: -moz-scrollbars-vertical; overflow-y: scroll; }
+    *, *:before, *:after { box-sizing: inherit; }
+    body { margin:0; background: #fafafa; }
+  </style>
+</head>
+
+<body>
+  <div id="swagger-ui"></div>
+
+  <!-- 🔥 Swagger JS -->
+  <script src="./swagger-ui-bundle.js"></script>
+  <script src="./swagger-ui-standalone-preset.js"></script>
+
+  <script>
+    window.onload = function () {
+      const ui = SwaggerUIBundle({
         url: '/api/docs-json',
-      },
-    });
+        dom_id: '#swagger-ui',
 
-    await nestApp.init();
-    cachedApp = server;
-  }
+        deepLinking: true,
 
-  return cachedApp;
+        presets: [
+          SwaggerUIBundle.presets.apis,
+          SwaggerUIStandalonePreset
+        ],
+
+        layout: "StandaloneLayout"
+      });
+    };
+  </script>
+</body>
+</html>
+  `);
+        });
+
+
+        // ===== Swagger JSON =====
+        server.get('/api/docs-json', (_req, res) => {
+            res.json(document);
+        });
+
+        await nestApp.init();
+        app = server;
+    }
+
+    return app;
 }
 
 export default async (req, res) => {
-  const app = await bootstrap();
-  app(req, res);
+    const app = await bootstrap();
+    app(req, res);
 };
