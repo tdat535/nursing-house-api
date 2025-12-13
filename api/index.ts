@@ -3,7 +3,6 @@ import { AppModule } from '../src/app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import express from 'express';
-import swaggerUiDist from 'swagger-ui-dist';
 
 const server = express();
 let cachedApp: any;
@@ -15,7 +14,6 @@ async function bootstrap() {
       new ExpressAdapter(server),
     );
 
-    // 🔥 Prefix chuẩn cho Vercel
     nestApp.setGlobalPrefix('api');
 
     // ===== Swagger document =====
@@ -27,45 +25,38 @@ async function bootstrap() {
 
     const document = SwaggerModule.createDocument(nestApp, config);
 
-    // ===== SERVE SWAGGER STATIC FILES =====
-    const swaggerPath = swaggerUiDist.getAbsoluteFSPath();
+    // ===== Swagger JSON =====
+    server.get('/api/docs-json', (_req, res) => {
+      res.json(document);
+    });
 
-    // ⚠️ KHÔNG set index:false
-    server.use('/api/docs', express.static(swaggerPath));
-
-    // ===== Swagger UI HTML =====
+    // ===== Swagger UI (CDN) =====
     server.get('/api/docs', (_req, res) => {
       res.setHeader('Content-Type', 'text/html');
       res.send(`
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
   <title>Carehome API Docs</title>
 
-  <!-- Swagger CSS -->
-  <link rel="stylesheet" href="/api/docs/swagger-ui.css" />
-
-  <style>
-    html { box-sizing: border-box; overflow-y: scroll; }
-    *, *:before, *:after { box-sizing: inherit; }
-    body { margin: 0; background: #fafafa; }
-  </style>
+  <!-- ✅ Swagger UI CDN CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css"
+  />
 </head>
-
 <body>
   <div id="swagger-ui"></div>
 
-  <!-- Swagger JS -->
-  <script src="/api/docs/swagger-ui-bundle.js"></script>
-  <script src="/api/docs/swagger-ui-standalone-preset.js"></script>
+  <!-- ✅ Swagger UI CDN JS -->
+  <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+  <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-standalone-preset.js"></script>
 
   <script>
-    window.onload = function () {
+    window.onload = () => {
       SwaggerUIBundle({
         url: '/api/docs-json',
         dom_id: '#swagger-ui',
-        deepLinking: true,
         presets: [
           SwaggerUIBundle.presets.apis,
           SwaggerUIStandalonePreset
@@ -79,11 +70,6 @@ async function bootstrap() {
       `);
     });
 
-    // ===== Swagger JSON =====
-    server.get('/api/docs-json', (_req, res) => {
-      res.json(document);
-    });
-
     await nestApp.init();
     cachedApp = server;
   }
@@ -91,7 +77,6 @@ async function bootstrap() {
   return cachedApp;
 }
 
-// ===== Vercel handler =====
 export default async function handler(req, res) {
   const app = await bootstrap();
   app(req, res);
