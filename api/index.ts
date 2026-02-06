@@ -14,6 +14,16 @@ async function bootstrap() {
       new ExpressAdapter(server),
     );
 
+    nestApp.enableCors({
+      origin: [
+        'http://localhost:3000',
+        'https://your-frontend.vercel.app', // nếu có
+      ],
+      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+      allowedHeaders: 'Content-Type, Authorization',
+      credentials: true,
+    });
+
     nestApp.setGlobalPrefix('api');
 
     // ===== Swagger document =====
